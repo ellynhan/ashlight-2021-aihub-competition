@@ -31,8 +31,6 @@ import android.widget.Toast;
 import java.io.File;
 import java.util.Arrays;
 
-import ai.hackathon.aeye.R;
-
 public class MainActivity extends AppCompatActivity {
 
     // 권한 관련 변수 값
@@ -41,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
 
     // 뷰 객체
     private TextureView textureView;
-    private TextView box0,box1,box2,box3,score,classIndex,distancePerson, directionPerson;
+    private TextView score,classIndex, direction;
 
     // 화면 각도 상수
     private static final SparseIntArray ORIENTATIONS = new SparseIntArray();
@@ -74,16 +72,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
         textureView = findViewById(R.id.textureView);
-        box0 = findViewById(R.id.box0);
-        box1 = findViewById(R.id.box1);
-        box2 = findViewById(R.id.box2);
-        box3 = findViewById(R.id.box3);
-        score = findViewById(R.id.score);
-        classIndex = findViewById(R.id.classIndex);
-        distancePerson = findViewById(R.id.distance);
-        directionPerson = findViewById(R.id.direction);
         distClass = new Distance();
         if (allPermissionsGranted()) {
             startCamera(); //start camera if permission has been granted by user
@@ -158,7 +147,7 @@ public class MainActivity extends AppCompatActivity {
 
         cameraId = manager.getCameraIdList()[0];
         CameraCharacteristics characteristics = manager.getCameraCharacteristics(cameraId);
-
+        float maxZoom = (characteristics.get(CameraCharacteristics.SCALER_AVAILABLE_MAX_DIGITAL_ZOOM))*10;
         StreamConfigurationMap map = characteristics.get(CameraCharacteristics.SCALER_STREAM_CONFIGURATION_MAP);
 
         imageDimensions = map.getOutputSizes(SurfaceTexture.class)[0];
@@ -205,7 +194,6 @@ public class MainActivity extends AppCompatActivity {
         if (cameraDevice == null) {
             return;
         }
-
         captureRequestBuilder.set(CaptureRequest.CONTROL_MODE, CameraMetadata.CONTROL_MODE_AUTO);
         cameraCaptureSession.setRepeatingRequest(captureRequestBuilder.build(), null, mBackgroundHandler);
     }
@@ -222,6 +210,7 @@ public class MainActivity extends AppCompatActivity {
         boolean processing = false;
         PlaySound pss;
         ProcessImage pi;
+
         @Override
         public void onSurfaceTextureAvailable(@NonNull SurfaceTexture surface, int width, int height) {
             try {
@@ -247,29 +236,31 @@ public class MainActivity extends AppCompatActivity {
             if(pss!=null&&pss.isProcessing == false){
                 processing = false;
                 pss = null;
+                System.out.println("=====PSS PROCESS FINISH====");
             }
             if(pi!=null&&pi.isProcessing == false){
                 processing = false;
+                System.out.println("=====PI PROCESS FINISH====");
             }
             if(processing){
                 System.out.println("=====STILL PROCESSING====");
                 return ;
-            }else if(pi!=null&&pi.result.size()>0){
-                System.out.println("=====Result CAMEOUT====");
             }
-            pi = null;
+            //결과 나옴
+            if(pi!=null && pi.result.size()==3){
+                System.out.println("=====RESUTL CAMEOUT====");
+                processing = true;
+                int resultClassIndex = Integer.parseInt(pi.result.get(1).toString());
+                int resultDirection = Integer.parseInt(pi.result.get(2).toString());
+                pss = new PlaySound( resultClassIndex,resultDirection,MainActivity.this,true,pi.manhole);
+                pss.play();
+                pi = null;
+                return ;
+            }
             System.out.println("======NOT PROCESSING=====");
             processing = true;
             pi = new ProcessImage(textureView.getBitmap(),MainActivity.this, processing);
             pi.it.execute();
-
-            //pi result에 값이 안들어옴
-//            if(pi.result.size()>0){
-//                PlaySound ps = new PlaySound((int)pi.result.indexOf(0),(int)pi.result.indexOf(1),MainActivity.this,true);
-//                ps.play();
-//            }else{
-//                pi.isProcessing = false;
-//            }
         }
     };
 
