@@ -247,13 +247,14 @@ public class MainActivity extends AppCompatActivity {
                 return ;
             }
             //결과 나옴
-            if(pi!=null && pi.result.size()==3){
+            if(pi!=null && pi.result.size()>=3){
                 System.out.println("=====RESUTL CAMEOUT====");
                 processing = true;
                 int resultClassIndex = Integer.parseInt(pi.result.get(1).toString());
                 int resultDirection = Integer.parseInt(pi.result.get(2).toString());
-                pss = new PlaySound( resultClassIndex,resultDirection,MainActivity.this,true,pi.manhole);
-                pss.play();
+                float resultDistance = Float.parseFloat(pi.result.get(3).toString());
+                pss = new PlaySound( resultClassIndex,resultDirection,resultDistance,MainActivity.this,true,pi.manhole);
+                pss.playSoundProcess();
                 pi = null;
                 return ;
             }

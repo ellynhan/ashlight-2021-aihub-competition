@@ -174,7 +174,7 @@ public class AiProcess {
         float xr=(float)box.get(resultFilterIndex)[2];
         float yt=(float)box.get(resultFilterIndex)[3];
         float direct = distClass.getDirection(xr,xl);
-//        float dist = distClass.getDistance(xl,yb,xr,yt);
+        float dist = distClass.getDistance(xl,yb,xr,yt);
         result.add(resultValue);
         if(resultClassIndex == 9){
             tsc = new TrafficSignColor(bmp,(int)xl,(int)yb,(int)xr,(int)yt);
@@ -187,6 +187,7 @@ public class AiProcess {
             result.add((int)resultClassIndex);
         }
         result.add((int)direct);
+        result.add(dist);
         isProcessing = false;
     }
 }
